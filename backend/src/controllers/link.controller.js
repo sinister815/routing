@@ -52,23 +52,40 @@ export const createLink = async (req, res) => {
  */
 export const getLinks = async (req, res) => {
   try {
-    const filter = {};
+    const campaignFilter = {};
     if (req.query.campaignId) {
-      filter.campaignId = req.query.campaignId;
+      const campaign = await Campaign.findOne({
+        _id: req.query.campaignId,
+        ownerId: req.user.id,
+      }).select('_id');
+
+      if (!campaign) {
+        return res.status(404).json({
+          success: false,
+          error: 'Campaign not found or unauthorized.',
+        });
+      }
+
+      campaignFilter.campaignId = campaign._id;
     }
 
-    const links = await Link.find(filter)
+    const ownedCampaigns = await Campaign.find({
+      ownerId: req.user.id,
+      ...campaignFilter,
+    }).select('_id');
+    const ownedCampaignIds = ownedCampaigns.map((campaign) => campaign._id);
+
+    if (ownedCampaignIds.length === 0) {
+      return res.status(200).json({ success: true, count: 0, data: [] });
+    }
+
+    const links = await Link.find({ campaignId: { $in: ownedCampaignIds } })
       .populate('campaignId', 'name status ownerId')
       .populate('targets.offerId', 'name url payout currency')
       .populate('targets.landerId', 'name url')
       .sort({ createdAt: -1 });
 
-    // Filter out links that don't belong to the logged-in user
-    const userLinks = links.filter(
-      (link) => link.campaignId && link.campaignId.ownerId.toString() === req.user.id
-    );
-
-    return res.status(200).json({ success: true, count: userLinks.length, data: userLinks });
+    return res.status(200).json({ success: true, count: links.length, data: links });
   } catch (error) {
     return res.status(500).json({ success: false, error: 'Failed to fetch links.', details: error.message });
   }

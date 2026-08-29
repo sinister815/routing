@@ -17,17 +17,42 @@ import redirectRoutes from './routes/redirect.route.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const allowedOrigins = (process.env.FRONTEND_URL || '')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 
 // Middleware
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps, curl, or S2S postbacks) or any localhost/frontend origin
-      callback(null, true);
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      if (
+        origin.startsWith('http://localhost:') ||
+        origin.startsWith('http://127.0.0.1:') ||
+        allowedOrigins.includes(origin)
+      ) {
+        return callback(null, true);
+      }
+
+      return callback(new Error('CORS origin not allowed'));
     },
     credentials: true,
   })
 );
+app.use((err, req, res, next) => {
+  if (err?.message === 'CORS origin not allowed') {
+    return res.status(403).json({
+      success: false,
+      message: 'CORS origin not allowed',
+    });
+  }
+
+  return next(err);
+});
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());

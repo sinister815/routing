@@ -168,10 +168,10 @@ export default function CampaignsPage() {
 
     try {
       const [clicksRes, convsRes, geoRes, timeseriesRes] = await Promise.all([
-        analyticsApi.getClicks({ campaignId: campaign._id }),
-        analyticsApi.getConversions({ campaignId: campaign._id }),
+        analyticsApi.getClicks({ campaignId: campaign._id, limit: 25 }),
+        analyticsApi.getConversions({ campaignId: campaign._id, limit: 25 }),
         analyticsApi.getGeo({ campaignId: campaign._id }),
-        analyticsApi.getTimeseries ? analyticsApi.getTimeseries({ campaignId: campaign._id }) : Promise.resolve(null),
+        analyticsApi.getTimeSeries({ campaignId: campaign._id, days: 7 }),
       ]);
 
       setAnalyticsData({
