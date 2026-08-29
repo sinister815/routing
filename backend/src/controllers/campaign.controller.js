@@ -124,9 +124,10 @@ export const deleteCampaign = async (req, res) => {
     }
 
     // Clean up associated links and remove their Redis hot-cache keys
-    const links = await Link.find({ campaignId: req.params.id });
-    for (const link of links) {
-      await redisClient.del(`link:rules:${link.slug}`);
+    const links = await Link.find({ campaignId: req.params.id }).select('slug').lean();
+    const redisKeys = links.map((link) => `link:rules:${link.slug}`);
+    if (redisKeys.length > 0) {
+      await redisClient.del(...redisKeys);
     }
     await Link.deleteMany({ campaignId: req.params.id });
 

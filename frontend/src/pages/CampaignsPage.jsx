@@ -58,6 +58,7 @@ export default function CampaignsPage() {
   const [editingCampaign, setEditingCampaign] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [statusToggling, setStatusToggling] = useState({});
+  const [deletingCampaignId, setDeletingCampaignId] = useState(null);
 
   // Success Link Modal State
   const [createdLinkModal, setCreatedLinkModal] = useState(null);
@@ -107,28 +108,27 @@ export default function CampaignsPage() {
   };
 
   const fetchCampaigns = async () => {
+    setLoading(true);
     try {
-      const [campRes, perfRes] = await Promise.all([
+      const [campRes, perfRes, linksRes] = await Promise.all([
         campaignApi.getAll(),
         analyticsApi.getCampaigns(),
+        linkApi.getAll(),
       ]);
 
       if (campRes.data?.success) {
         const fetchedCampaigns = campRes.data.data;
         setCampaigns(fetchedCampaigns);
 
-        const linkPromises = fetchedCampaigns.map((c) => linkApi.getAll(c._id));
-        const linkResults = await Promise.allSettled(linkPromises);
-
         const lMap = {};
-        linkResults.forEach((res, idx) => {
-          if (res.status === 'fulfilled' && res.value.data?.success) {
-            const links = res.value.data.data;
-            if (links.length > 0) {
-              lMap[fetchedCampaigns[idx]._id] = links[0].slug;
+        if (linksRes.data?.success) {
+          linksRes.data.data.forEach((link) => {
+            const campaignId = link.campaignId?._id || link.campaignId;
+            if (campaignId && !lMap[campaignId]) {
+              lMap[campaignId] = link.slug;
             }
-          }
-        });
+          });
+        }
         setLinksMap(lMap);
       }
 
@@ -397,12 +397,30 @@ export default function CampaignsPage() {
 
   const handleDeleteConfirm = async () => {
     if (!deleteTarget) return;
+    const campaignId = deleteTarget._id;
+    setDeletingCampaignId(campaignId);
     try {
-      await campaignApi.delete(deleteTarget._id);
-      setCampaigns((prev) => prev.filter((c) => c._id !== deleteTarget._id));
+      await campaignApi.delete(campaignId);
+      setCampaigns((prev) => prev.filter((c) => c._id !== campaignId));
+      setLinksMap((prev) => {
+        const next = { ...prev };
+        delete next[campaignId];
+        return next;
+      });
+      setPerfMap((prev) => {
+        const next = { ...prev };
+        delete next[campaignId];
+        return next;
+      });
       setDeleteTarget(null);
     } catch (err) {
-      alert('Failed to delete campaign');
+      alert(
+        err.response?.data?.error ||
+          err.response?.data?.message ||
+          'Failed to delete campaign'
+      );
+    } finally {
+      setDeletingCampaignId(null);
     }
   };
 
@@ -842,6 +860,7 @@ export default function CampaignsPage() {
                         {/* Delete Button */}
                         <button
                           onClick={() => setDeleteTarget(c)}
+                          disabled={deletingCampaignId === c._id}
                           className="p-1.5 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-colors"
                           title="Delete Campaign"
                         >
@@ -1042,7 +1061,12 @@ export default function CampaignsPage() {
           <Button variant="outline" size="sm" onClick={() => setDeleteTarget(null)}>
             Cancel
           </Button>
-          <Button variant="danger" size="sm" onClick={handleDeleteConfirm}>
+          <Button
+            variant="danger"
+            size="sm"
+            onClick={handleDeleteConfirm}
+            loading={deletingCampaignId === deleteTarget?._id}
+          >
             Delete Campaign
           </Button>
         </div>
