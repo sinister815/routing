@@ -24,6 +24,7 @@ import Button from '../components/ui/Button.jsx';
 import Badge from '../components/ui/Badge.jsx';
 import Modal from '../components/ui/Modal.jsx';
 import { Input, Select } from '../components/ui/Input.jsx';
+import { getTrackingUrl } from '../lib/urls.js';
 import {
   TableContainer,
   Table,
@@ -150,13 +151,8 @@ export default function CampaignsPage() {
     loadResources();
   }, []);
 
-  const getFullRedirectUrl = (slug) => {
-    const origin = window.location.origin;
-    return `${origin}/go/${slug}`;
-  };
-
   const handleCopyLink = (slug, campaignId = null) => {
-    const url = getFullRedirectUrl(slug);
+    const url = getTrackingUrl(slug);
     navigator.clipboard.writeText(url);
     if (campaignId) {
       setCopiedId(campaignId);
@@ -376,7 +372,7 @@ export default function CampaignsPage() {
 
       setCreatedLinkModal({
         name: data.name,
-        url: getFullRedirectUrl(finalSlug),
+        url: getTrackingUrl(finalSlug),
       });
     } catch (err) {
       alert(err.response?.data?.error || 'Failed to save campaign configuration');

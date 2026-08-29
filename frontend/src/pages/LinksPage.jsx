@@ -19,6 +19,7 @@ import { linkApi, campaignApi, offerApi, landerApi } from '../services/api.js';
 import Button from '../components/ui/Button.jsx';
 import Badge from '../components/ui/Badge.jsx';
 import Modal from '../components/ui/Modal.jsx';
+import { getTrackingUrl } from '../lib/urls.js';
 import { Input, Select } from '../components/ui/Input.jsx';
 import {
   TableContainer,
@@ -215,13 +216,6 @@ export default function LinksPage() {
     } catch (err) {
       alert('Failed to delete tracking link');
     }
-  };
-
-  const getTrackingUrl = (slug) => {
-    const host = window.location.origin.includes('localhost:3000')
-      ? 'http://localhost:5000'
-      : window.location.origin;
-    return `${host}/go/${slug}`;
   };
 
   const copyToClipboard = (slug) => {

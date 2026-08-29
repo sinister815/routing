@@ -129,4 +129,7 @@ node src/test-e2e.js
 1. **Redirect Engine & Backend API**: Deploy to Render, Railway, DigitalOcean App Platform, or AWS ECS/EC2.
 2. **Redis Layer**: Use Redis Cloud or Upstash Redis.
 3. **Database**: MongoDB Atlas.
-4. **Dashboard Frontend**: Deploy `frontend/` to Vercel, Netlify, or Cloudflare Pages with build command `npm run build` and output directory `dist`. Set environment variable `VITE_API_URL` pointing to your backend domain.
+4. **Dashboard Frontend**: Deploy `frontend/` to Vercel, Netlify, Cloudflare Pages, or a separate Render static site with build command `npm run build` and output directory `dist`.
+5. **Frontend Environment Variables**:
+   - Set `VITE_API_URL=https://<your-backend>.onrender.com`
+   - Set `VITE_TRACKING_BASE_URL=https://<your-backend>.onrender.com` when the frontend and backend are on different domains. This ensures copied/tested `/go/:slug` tracking links point at the Express redirect engine instead of the frontend site.
