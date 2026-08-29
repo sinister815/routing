@@ -4,7 +4,6 @@ import { UAParser } from 'ua-parser-js';
 import { nanoid } from 'nanoid';
 import path from 'path';
 import fs from 'fs';
-import net from 'net';
 import { fileURLToPath } from 'url';
 import { redisClient } from '../config/redis.js';
 
@@ -30,68 +29,12 @@ let geoLookup = null;
 })();
 
 
-const normalizeIp = (rawIp = '') => {
-  let ip = String(rawIp).trim();
-
-  if (!ip) return '';
-  if (ip.startsWith('::ffff:')) {
-    ip = ip.slice(7);
-  }
-  if (ip.startsWith('[') && ip.includes(']')) {
-    ip = ip.slice(1, ip.indexOf(']'));
-  }
-  if (/^\d{1,3}(\.\d{1,3}){3}:\d+$/.test(ip)) {
-    ip = ip.split(':')[0];
-  }
-
-  return net.isIP(ip) ? ip : '';
-};
-
-const isPrivateIp = (ip) => {
-  if (!ip) return true;
-
-  if (net.isIP(ip) === 4) {
-    return (
-      ip.startsWith('10.') ||
-      ip.startsWith('127.') ||
-      ip.startsWith('192.168.') ||
-      /^172\.(1[6-9]|2\d|3[0-1])\./.test(ip)
-    );
-  }
-
-  if (net.isIP(ip) === 6) {
-    return ip === '::1' || ip.startsWith('fc') || ip.startsWith('fd') || ip.startsWith('fe80:');
-  }
-
-  return true;
-};
-
 const getClientIp = (req) => {
-  const candidates = [
-    req.headers['cf-connecting-ip'],
-    req.headers['x-real-ip'],
-    ...(req.headers['x-forwarded-for']
-      ? String(req.headers['x-forwarded-for']).split(',')
-      : []),
-    req.socket?.remoteAddress,
-    req.ip,
-  ];
-
-  for (const candidate of candidates) {
-    const normalized = normalizeIp(candidate);
-    if (normalized && !isPrivateIp(normalized)) {
-      return normalized;
-    }
+  const forwarded = req.headers['x-forwarded-for'];
+  if (forwarded) {
+    return forwarded.split(',')[0].trim();
   }
-
-  for (const candidate of candidates) {
-    const normalized = normalizeIp(candidate);
-    if (normalized) {
-      return normalized;
-    }
-  }
-
-  return '';
+  return req.socket?.remoteAddress || req.ip || '';
 };
 
 const getDeviceType = (userAgentString) => {

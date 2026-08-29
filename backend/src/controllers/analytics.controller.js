@@ -7,26 +7,16 @@ import { Offer } from '../models/offer.model.js';
 import { Lander } from '../models/lander.model.js';
 import { redisClient } from '../config/redis.js';
 
-const getOwnedCampaignIds = async (userId, campaignId = null) => {
-  const filter = { ownerId: new mongoose.Types.ObjectId(userId) };
-
-  if (campaignId) {
-    filter._id = campaignId;
-  }
-
-  const campaigns = await Campaign.find(filter).select('_id status').lean();
-
-  return campaigns;
-};
-
 /**
  * Get high-level overview metrics & KPIs for the authenticated user
  * GET /api/analytics/overview
  */
 export const getOverviewStats = async (req, res) => {
   try {
+    const userId = new mongoose.Types.ObjectId(req.user.id);
+
     // Fetch user's campaigns
-    const userCampaigns = await getOwnedCampaignIds(req.user.id);
+    const userCampaigns = await Campaign.find({ ownerId: userId }).select('_id status').lean();
     const campaignIds = userCampaigns.map((c) => c._id);
 
     if (campaignIds.length === 0) {
@@ -142,13 +132,13 @@ export const getOverviewStats = async (req, res) => {
  */
 export const getTimeSeriesAnalytics = async (req, res) => {
   try {
+    const userId = new mongoose.Types.ObjectId(req.user.id);
     const days = parseInt(req.query.days || '7', 10);
-    const campaignId = req.query.campaignId || null;
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - (days - 1));
     startDate.setHours(0, 0, 0, 0);
 
-    const userCampaigns = await getOwnedCampaignIds(req.user.id, campaignId);
+    const userCampaigns = await Campaign.find({ ownerId: userId }).select('_id').lean();
     const campaignIds = userCampaigns.map((c) => c._id);
 
     if (campaignIds.length === 0) {
@@ -234,7 +224,8 @@ export const getTimeSeriesAnalytics = async (req, res) => {
  */
 export const getCampaignPerformance = async (req, res) => {
   try {
-    const campaigns = await Campaign.find({ ownerId: req.user.id }).lean();
+    const userId = new mongoose.Types.ObjectId(req.user.id);
+    const campaigns = await Campaign.find({ ownerId: userId }).lean();
 
     if (campaigns.length === 0) {
       return res.status(200).json({ success: true, data: [] });
@@ -307,8 +298,8 @@ export const getCampaignPerformance = async (req, res) => {
  */
 export const getGeoAnalytics = async (req, res) => {
   try {
-    const campaignId = req.query.campaignId || null;
-    const campaigns = await getOwnedCampaignIds(req.user.id, campaignId);
+    const userId = new mongoose.Types.ObjectId(req.user.id);
+    const campaigns = await Campaign.find({ ownerId: userId }).select('_id').lean();
     const campaignIds = campaigns.map((c) => c._id);
 
     if (campaignIds.length === 0) {
@@ -345,8 +336,8 @@ export const getGeoAnalytics = async (req, res) => {
  */
 export const getDeviceAnalytics = async (req, res) => {
   try {
-    const campaignId = req.query.campaignId || null;
-    const campaigns = await getOwnedCampaignIds(req.user.id, campaignId);
+    const userId = new mongoose.Types.ObjectId(req.user.id);
+    const campaigns = await Campaign.find({ ownerId: userId }).select('_id').lean();
     const campaignIds = campaigns.map((c) => c._id);
 
     if (campaignIds.length === 0) {
@@ -382,10 +373,10 @@ export const getDeviceAnalytics = async (req, res) => {
  */
 export const getRecentClicks = async (req, res) => {
   try {
+    const userId = new mongoose.Types.ObjectId(req.user.id);
     const limit = Math.min(parseInt(req.query.limit || '50', 10), 100);
-    const campaignId = req.query.campaignId || null;
 
-    const campaigns = await getOwnedCampaignIds(req.user.id, campaignId);
+    const campaigns = await Campaign.find({ ownerId: userId }).select('_id').lean();
     const campaignIds = campaigns.map((c) => c._id);
 
     if (campaignIds.length === 0) {
@@ -413,10 +404,10 @@ export const getRecentClicks = async (req, res) => {
  */
 export const getRecentConversions = async (req, res) => {
   try {
+    const userId = new mongoose.Types.ObjectId(req.user.id);
     const limit = Math.min(parseInt(req.query.limit || '50', 10), 100);
-    const campaignId = req.query.campaignId || null;
 
-    const campaigns = await getOwnedCampaignIds(req.user.id, campaignId);
+    const campaigns = await Campaign.find({ ownerId: userId }).select('_id').lean();
     const campaignIds = campaigns.map((c) => c._id);
 
     if (campaignIds.length === 0) {

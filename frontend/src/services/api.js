@@ -12,18 +12,6 @@ const api = axios.create({
   },
 });
 
-const normalizeAnalyticsParams = (value, fallback = {}) => {
-  if (typeof value === 'number') {
-    return { ...fallback, limit: value };
-  }
-
-  if (value && typeof value === 'object') {
-    return { ...fallback, ...value };
-  }
-
-  return fallback;
-};
-
 // Auth API
 export const authApi = {
   login: (credentials) => api.post('/users/login', credentials),
@@ -71,16 +59,12 @@ export const linkApi = {
 // Analytics API
 export const analyticsApi = {
   getOverview: () => api.get('/analytics/overview'),
-  getTimeSeries: (params = 7) =>
-    api.get('/analytics/timeseries', { params: normalizeAnalyticsParams(params, { days: 7 }) }),
-  getTimeseries: (params = 7) =>
-    api.get('/analytics/timeseries', { params: normalizeAnalyticsParams(params, { days: 7 }) }),
+  getTimeSeries: (days = 7) => api.get('/analytics/timeseries', { params: { days } }),
   getCampaigns: () => api.get('/analytics/campaigns'),
-  getGeo: (params = {}) => api.get('/analytics/geo', { params: normalizeAnalyticsParams(params) }),
-  getDevice: (params = {}) => api.get('/analytics/device', { params: normalizeAnalyticsParams(params) }),
-  getClicks: (params = 50) => api.get('/analytics/clicks', { params: normalizeAnalyticsParams(params, { limit: 50 }) }),
-  getConversions: (params = 50) =>
-    api.get('/analytics/conversions', { params: normalizeAnalyticsParams(params, { limit: 50 }) }),
+  getGeo: () => api.get('/analytics/geo'),
+  getDevice: () => api.get('/analytics/device'),
+  getClicks: (limit = 50) => api.get('/analytics/clicks', { params: { limit } }),
+  getConversions: (limit = 50) => api.get('/analytics/conversions', { params: { limit } }),
 };
 
 // Postback Simulator API
