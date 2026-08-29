@@ -133,3 +133,12 @@ node src/test-e2e.js
 5. **Frontend Environment Variables**:
    - Set `VITE_API_URL=https://<your-backend>.onrender.com`
    - Set `VITE_TRACKING_BASE_URL=https://<your-backend>.onrender.com` when the frontend and backend are on different domains. This ensures copied/tested `/go/:slug` tracking links point at the Express redirect engine instead of the frontend site.
+6. **Render Blueprint**:
+   - A ready-to-sync Blueprint is included at `render.yaml`
+   - It creates:
+     - `routing-backend` as a Node web service
+     - `routing-frontend` as a static site
+   - The frontend Blueprint includes the required SPA rewrite from `/*` to `/index.html`, which fixes refreshes on routes like `/campaigns`
+   - Fill these values in Render after syncing the Blueprint:
+     - Backend: `MONGO_URI`, `REDIS_URL`, `JWT_SECRET`, `POSTBACK_SECRET`
+     - Frontend: `VITE_API_URL`, `VITE_TRACKING_BASE_URL`
