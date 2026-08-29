@@ -68,11 +68,17 @@ export const analyticsApi = {
 };
 
 // Postback Simulator API
-export const postbackApi = {
-  // Dispatches postback simulation requests
-  simulate: (params) => axios.get('/postback', { params }),
+// export const postbackApi = {
+//   // Dispatches postback simulation requests
+//   simulate: (params) => axios.get('/postback', { params }),
   
-  // Fetches active POSTBACK_SECRET token for the UI
+//   // Fetches active POSTBACK_SECRET token for the UI
+//   getToken: () => api.get('/postback/config/token'),
+// };
+
+
+export const postbackApi = {
+  simulate: (params) => api.get('/postback', { params }),
   getToken: () => api.get('/postback/config/token'),
 };
 
