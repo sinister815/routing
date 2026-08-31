@@ -20,7 +20,14 @@ let geoLookup = null;
       path.resolve(process.cwd(), 'data/GeoLite2-Country.mmdb'),
       path.resolve(process.cwd(), 'backend/data/GeoLite2-Country.mmdb'),
     ];
+    
+    // DEBUG: Log all paths being checked
+    console.log('[DEBUG] Checking GeoLite2 paths:');
+    possiblePaths.forEach(p => console.log(`  - ${p} (exists: ${fs.existsSync(p)})`));
+    
     const dbPath = possiblePaths.find((p) => fs.existsSync(p)) || possiblePaths[0];
+    console.log(`[DEBUG] Using GeoLite2 database at: ${dbPath}`);
+    
     geoLookup = await maxmind.open(dbPath);
     console.log('[GeoLite2] Binary database loaded into memory successfully.');
   } catch (err) {
@@ -29,7 +36,7 @@ let geoLookup = null;
 })();
 
 
-const getClientIp = (req) => {
+export const getClientIp = (req) => {
   const forwarded = req.headers['x-forwarded-for'];
   if (forwarded) {
     return forwarded.split(',')[0].trim();
@@ -48,7 +55,7 @@ const getDeviceType = (userAgentString) => {
 };
 
 /** Get ISO 2-letter country code from in-memory MMDB lookup */
-const getCountryCode = (ip) => {
+export const getCountryCode = (ip) => {
   if (!geoLookup || !ip) return 'UNKNOWN';
   try {
     const result = geoLookup.get(ip);
@@ -57,6 +64,8 @@ const getCountryCode = (ip) => {
     return 'UNKNOWN';
   }
 };
+
+export const isGeoLookupLoaded = () => !!geoLookup;
 
 
 const selectTarget = (targets, country, device) => {
@@ -120,6 +129,9 @@ export async function redirect(req, res) {
     const device = getDeviceType(userAgent);
     const country = getCountryCode(ip);
 
+    // DEBUG: Log IP and country detection
+    console.log(`[DEBUG] IP: ${ip} | Country: ${country} | UA: ${userAgent.substring(0, 50)}`);
+
     // 3. Match Target
     const selectedTarget = selectTarget(rules.targets, country, device);
     if (!selectedTarget) {
@@ -128,7 +140,18 @@ export async function redirect(req, res) {
 
     // 4. Generate Click ID & metadata
     const clickId = nanoid(16);
-    const destinationUrl = selectedTarget.landerUrl || selectedTarget.offerUrl;
+    let destinationUrl;
+    if (selectedTarget.landerUrl && selectedTarget.offerUrl) {
+      const separator = selectedTarget.landerUrl.includes('?') ? '&' : '?';
+      destinationUrl = `${selectedTarget.landerUrl}${separator}next=${encodeURIComponent(selectedTarget.offerUrl)}`;
+    } else if (selectedTarget.landerUrl) {
+      // Only Lander exists
+      destinationUrl = selectedTarget.landerUrl;
+    } else if (selectedTarget.offerUrl) {
+      // Only Offer exists
+      destinationUrl = selectedTarget.offerUrl;
+    }
+
     if (!destinationUrl) {
       return res.status(404).send('No valid routing destination available.');
     }
@@ -177,5 +200,3 @@ export async function redirect(req, res) {
     return res.status(500).send('Internal routing error.');
   }
 }
-
-

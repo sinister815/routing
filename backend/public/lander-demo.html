@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Special Offer - Limited Time</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+    }
+
+    .container {
+      max-width: 600px;
+      width: 90%;
+      text-align: center;
+      padding: 3rem 2rem;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .badge {
+      display: inline-block;
+      background: #e94560;
+      color: #fff;
+      padding: 0.5rem 1.5rem;
+      border-radius: 50px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 1.5rem;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      line-height: 1.2;
+    }
+
+    h1 span {
+      color: #e94560;
+    }
+
+    p {
+      font-size: 1.1rem;
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 2rem;
+      line-height: 1.6;
+    }
+
+    .features {
+      text-align: left;
+      margin-bottom: 2rem;
+    }
+
+    .features li {
+      list-style: none;
+      padding: 0.5rem 0;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .features li::before {
+      content: "✓ ";
+      color: #00d26a;
+      font-weight: bold;
+    }
+
+    .cta-button {
+      display: inline-block;
+      background: linear-gradient(135deg, #e94560 0%, #ff6b6b 100%);
+      color: #fff;
+      padding: 1rem 3rem;
+      border: none;
+      border-radius: 50px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .cta-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(233, 69, 96, 0.4);
+    }
+
+    .timer {
+      margin-top: 2rem;
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .timer span {
+      color: #ff6b6b;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="badge">🔥 Limited Time Offer</div>
+    
+    <h1>Get <span>50% Off</span> Today Only!</h1>
+    
+    <p>Don't miss out on this exclusive deal. Thousands have already claimed their discount. Join them now!</p>
+    
+    <ul class="features">
+      <li>Instant access after claim</li>
+      <li>No credit card required</li>
+      <li>30-day money back guarantee</li>
+      <li>24/7 customer support</li>
+    </ul>
+    
+    <!-- This is the button that triggers the redirect -->
+    <button id="claimBtn" class="cta-button">Claim Your Discount Now</button>
+    
+    <p class="timer">Offer expires in <span id="countdown">15:00</span></p>
+  </div>
+
+  <!-- Lander Redirect Script - Triggers on button click -->
+  <script 
+    src="/lander-redirect.js" 
+    data-trigger="button" 
+    data-button-id="claimBtn">
+  </script>
+
+  <!-- Simple countdown timer for demo purposes -->
+  <script>
+    let time = 15 * 60;
+    const countdownEl = document.getElementById('countdown');
+    
+    setInterval(() => {
+      time--;
+      const mins = Math.floor(time / 60);
+      const secs = time % 60;
+      countdownEl.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+      if (time <= 0) time = 15 * 60;
+    }, 1000);
+  </script>
+</body>
+</html>

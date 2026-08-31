@@ -7,7 +7,7 @@ const router = Router();
 router.post('/',authenticate, createLink);
 router.get('/', authenticate, getLinks);
 router.get('/:slug', authenticate, getLinkById);
-router.put('/:slug', authenticate, updateLink);
-router.delete('/:slug', authenticate, deleteLink);
+router.put('/:id', authenticate, updateLink);
+router.delete('/:id', authenticate, deleteLink);
 
 export default router;

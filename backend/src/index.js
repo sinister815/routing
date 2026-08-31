@@ -43,6 +43,23 @@ app.use('/postback', postBackRoutes);
 app.use('/api/postback', postBackRoutes);
 app.use('/api/rules', postBackRoutes);
 
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Serve lander redirect script
+app.get('/lander-redirect.js', (req, res) => {
+  res.type('application/javascript');
+  res.sendFile(path.join(__dirname, '../public/lander-redirect.js'));
+});
+
+// Serve demo lander page
+app.get('/demo', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/lander-demo.html'));
+});
+
 // Management & Analytics API Routes
 app.use('/api/campaigns', campaignRoutes);
 app.use('/api/offers', offerRoutes);

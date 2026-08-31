@@ -63,6 +63,7 @@ export default function CampaignsPage() {
   // Success Link Modal State
   const [createdLinkModal, setCreatedLinkModal] = useState(null);
   const [copiedId, setCopiedId] = useState(null);
+  const [copiedModal, setCopiedModal] = useState(false);
 
   // Inline creation toggle flags
   const [showCreateOffer, setShowCreateOffer] = useState({});
@@ -156,7 +157,7 @@ export default function CampaignsPage() {
     navigator.clipboard.writeText(url);
     if (campaignId) {
       setCopiedId(campaignId);
-      setTimeout(() => setCopiedId(null), 2000);
+      setTimeout(() => setCopiedId(null), 1000);
     }
   };
 
@@ -1094,11 +1095,12 @@ export default function CampaignsPage() {
                   size="sm"
                   onClick={() => {
                     navigator.clipboard.writeText(createdLinkModal.url);
-                    alert('Copied to clipboard!');
+                    setCopiedModal(true);
+                    setTimeout(() => setCopiedModal(false), 1000);
                   }}
-                  icon={Copy}
+                  icon={copiedModal ? Check : Copy}
                 >
-                  Copy
+                  {copiedModal ? 'Copied' : 'Copy'}
                 </Button>
               </div>
             </div>
@@ -1202,6 +1204,85 @@ export default function CampaignsPage() {
                   )}
                 </div>
 
+<div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-semibold text-slate-700">
+                      Landing Page (Optional)
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setShowCreateLander((prev) => ({ ...prev, [idx]: !prev[idx] }))
+                      }
+                      className="text-[11px] font-medium text-indigo-600 hover:text-indigo-800 flex items-center space-x-1"
+                    >
+                      {showCreateLander[idx] ? (
+                        <>
+                          <X className="h-3 w-3" /> <span>Select Existing</span>
+                        </>
+                      ) : (
+                        <>
+                          <Plus className="h-3 w-3" /> <span>Create New Lander</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  {showCreateLander[idx] ? (
+                    <div className="bg-amber-50/50 rounded-lg p-3 border border-amber-100 space-y-2">
+                      <input
+                        type="text"
+                        placeholder="Lander Name (e.g., Advertorial V1)"
+                        value={newLanderData[idx]?.name || ''}
+                        onChange={(e) =>
+                          setNewLanderData((prev) => ({
+                            ...prev,
+                            [idx]: { ...prev[idx], name: e.target.value },
+                          }))
+                        }
+                        className="w-full rounded-md border border-slate-300 bg-white py-1.5 px-2.5 text-xs focus:outline-none focus:border-indigo-600"
+                      />
+                      <input
+                        type="url"
+                        placeholder="Lander URL (e.g., https://myblog.com/presell)"
+                        value={newLanderData[idx]?.url || ''}
+                        onChange={(e) =>
+                          setNewLanderData((prev) => ({
+                            ...prev,
+                            [idx]: { ...prev[idx], url: e.target.value },
+                          }))
+                        }
+                        className="w-full rounded-md border border-slate-300 bg-white py-1.5 px-2.5 text-xs focus:outline-none focus:border-indigo-600 font-mono"
+                      />
+                      <div className="flex justify-end pt-1">
+                        <Button
+                          type="button"
+                          variant="primary"
+                          size="sm"
+                          onClick={() => handleCreateInlineLander(idx)}
+                        >
+                          Save & Select Lander
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <select
+                      value={target.landerId || ''}
+                      onChange={(e) =>
+                        handleTargetChange(idx, 'landerId', e.target.value || null)
+                      }
+                      className="w-full rounded-lg border border-slate-300 bg-white py-2 px-3 text-xs focus:outline-none focus:border-indigo-600"
+                    >
+                      <option value="">Direct to Offer (No Lander)</option>
+                      {landers.map((l) => (
+                        <option key={l._id} value={l._id}>
+                          {l.name}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
                     <label className="text-xs font-semibold text-slate-700">
@@ -1280,84 +1361,7 @@ export default function CampaignsPage() {
                   )}
                 </div>
 
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-semibold text-slate-700">
-                      Landing Page (Optional)
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setShowCreateLander((prev) => ({ ...prev, [idx]: !prev[idx] }))
-                      }
-                      className="text-[11px] font-medium text-indigo-600 hover:text-indigo-800 flex items-center space-x-1"
-                    >
-                      {showCreateLander[idx] ? (
-                        <>
-                          <X className="h-3 w-3" /> <span>Select Existing</span>
-                        </>
-                      ) : (
-                        <>
-                          <Plus className="h-3 w-3" /> <span>Create New Lander</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-
-                  {showCreateLander[idx] ? (
-                    <div className="bg-amber-50/50 rounded-lg p-3 border border-amber-100 space-y-2">
-                      <input
-                        type="text"
-                        placeholder="Lander Name (e.g., Advertorial V1)"
-                        value={newLanderData[idx]?.name || ''}
-                        onChange={(e) =>
-                          setNewLanderData((prev) => ({
-                            ...prev,
-                            [idx]: { ...prev[idx], name: e.target.value },
-                          }))
-                        }
-                        className="w-full rounded-md border border-slate-300 bg-white py-1.5 px-2.5 text-xs focus:outline-none focus:border-indigo-600"
-                      />
-                      <input
-                        type="url"
-                        placeholder="Lander URL (e.g., https://myblog.com/presell)"
-                        value={newLanderData[idx]?.url || ''}
-                        onChange={(e) =>
-                          setNewLanderData((prev) => ({
-                            ...prev,
-                            [idx]: { ...prev[idx], url: e.target.value },
-                          }))
-                        }
-                        className="w-full rounded-md border border-slate-300 bg-white py-1.5 px-2.5 text-xs focus:outline-none focus:border-indigo-600 font-mono"
-                      />
-                      <div className="flex justify-end pt-1">
-                        <Button
-                          type="button"
-                          variant="primary"
-                          size="sm"
-                          onClick={() => handleCreateInlineLander(idx)}
-                        >
-                          Save & Select Lander
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <select
-                      value={target.landerId || ''}
-                      onChange={(e) =>
-                        handleTargetChange(idx, 'landerId', e.target.value || null)
-                      }
-                      className="w-full rounded-lg border border-slate-300 bg-white py-2 px-3 text-xs focus:outline-none focus:border-indigo-600"
-                    >
-                      <option value="">Direct to Offer (No Lander)</option>
-                      {landers.map((l) => (
-                        <option key={l._id} value={l._id}>
-                          {l.name}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                </div>
+                
 
                 <div className="space-y-1">
                   <div className="flex items-center justify-between text-xs text-slate-600">

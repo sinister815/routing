@@ -221,7 +221,7 @@ export default function LinksPage() {
   const copyToClipboard = (slug) => {
     navigator.clipboard.writeText(getTrackingUrl(slug));
     setCopiedSlug(slug);
-    setTimeout(() => setCopiedSlug(null), 2000);
+    setTimeout(() => setCopiedSlug(null), 1000);
   };
 
   const filteredLinks = links.filter((l) =>
